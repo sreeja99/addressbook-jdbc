@@ -1,22 +1,31 @@
 package com.addbook.jdbc;
 
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
-import junit.framework.Assert;
 
+import com.addbook.jdbc.AddressBookService.IOService;
+import com.google.gson.Gson;
+
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 class AddressBookTest {
 
 	@Test
 	public void retreivedContacts_Should_MatchCount() {
 		AddressBookService addressBookService = new AddressBookService();
 		List<Contact> contactList = addressBookService.readContactData();
-		Assert.assertEquals(2, contactList.size());
+		Assert.assertEquals(6, contactList.size());
 	}
 	@Test
 	public void givenName_WhenUpdatedContactInfo_ShouldSyncWithDB()  {
@@ -53,7 +62,7 @@ class AddressBookTest {
 	}
 	@Test
 	public void givenMultipeContacts_WhenAddedToDBWithMultiThreads_ShouldSyncWithDB() {
-		List<Contact> contacts = new ArrayList<>() {
+		List<Contact> contacts = new ArrayList() {
 			{
 				add(new Contact("sreeja", "Godishala", "gopalpur", "hnk", "wgl", "682011",
 						"8725120000", "srijagodishala@gmail.com"));
@@ -65,5 +74,37 @@ class AddressBookTest {
 		List<Contact> contactList = AddressBookService.readContactData();
 		Assert.assertEquals(7, contactList.size());
 	}
-
+	@Before
+	public void setUp() {
+		RestAssured.baseURI = "https://localhost";
+		RestAssured.port = 3000;
+	}
+	@Test
+	public void givenEmployee_readFromJsonServer_ShouldMatch() {
+		AddressBookService addressBookService;
+		Contact[] arrayOfContacts = getContactList();
+		addressBookService = new AddressBookService(Arrays.asList(arrayOfContacts));
+		Contact contactJson = new Contact("2018-08-08", "Sreeja", "Godishala", "Gopalpur", "Hnk",
+				"wgl", "873485", "7289472389", "srijagodishala@gmail.com", "Friends");
+		Response response1 =addEmployeeToJsonServer(contactJson);
+		int statusCode=response1.getStatusCode();
+		Assert.assertEquals(201,statusCode);
+		addressBookService.add(contactJson,IOService.REST_IO);
+		long entries = addressBookService.countEntries(IOService.REST_IO);
+		Assert.assertEquals(2, entries);
+	}
+	private Response addEmployeeToJsonServer(Contact contactJson) {
+		String empJson =new Gson().toJson(contactJson);
+		RequestSpecification request =RestAssured.given();
+		request.header("Content-Type","application/json");
+		request.body(empJson);
+		return request.post("/contactsDB");
+	}
+	private Contact[] getContactList() {
+		Response response = RestAssured.get("/contacts");
+		System.out.println("Contacts entries in JSONserver" + response.asString());
+		Contact[] arrayOfcontacts = new Gson().fromJson(response.asString(), Contact[].class);
+		return arrayOfcontacts;
+	}
+	
 }

@@ -89,7 +89,7 @@ public class AddressBookDBService {
 
 	private int updateContactDataUsingPreparedStatement(String first_name, String address) {
 		try (Connection connection = addressBookDBService.getConnection();) {
-			String sql = "update contact_details set address=? where first_name=?";
+			String sql = "update address_book set address=? where first_name=?";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, address);
 			preparedStatement.setString(2, first_name);
@@ -138,7 +138,7 @@ public class AddressBookDBService {
 	}
 
 	public Map<String, Integer> getContactByCity() {
-		String sql = "SELECT city, COUNT(firstName) as count from contact_details group by city; ";
+		String sql = "SELECT city, COUNT(firstName) as count from contacts group by city; ";
 		Map<String, Integer> contactByCityMap = new HashMap<>();
 		try (Connection connection = addressBookDBService.getConnection()) {
 			Statement statement = connection.createStatement();
@@ -174,7 +174,7 @@ public class AddressBookDBService {
 	public static Contact insertNewContactToDB(String date, String firstName, String lastName, String address,
 			String city, String state, String zip, String phoneNo, String email) {
 		String sql = String.format(
-				"INSERT INTO contacs (date_added,first_name,last_name,address,city,state,zip,phone_number,email) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+				"INSERT INTO contacts (date_added,first_name,last_name,address,city,state,zip,phone_number,email) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
 				date, firstName, lastName, address, city, state, zip, phoneNo, email);
 		Contact contact = null;
 		try (Connection connection = getConnection()) {
