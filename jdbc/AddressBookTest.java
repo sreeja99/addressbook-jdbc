@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.jupiter.api.Test;
 
 import com.addbook.jdbc.AddressBookService.IOService;
+import com.capgemini.employeepayrolljdbc.EmployeePayrollData;
+import com.capgemini.employeepayrolljdbc.AddressBookService;
 import com.google.gson.Gson;
 
 import io.restassured.RestAssured;
@@ -131,19 +133,21 @@ class AddressBookTest {
 		Assert.assertEquals(5, entries);
 	}
 	@Test
-	public void givenNewContactFor_WhenUpdated_ShouldMatch200Respnse() {
-		AddressBookService addressBookService;
+	public void givenContactToDelete_WhenDeleted_ShouldMatch200ResponseAndCount() {
 		Contact[] arrayOfContacts = getContactList();
+		AddressBookService addressBookService;
 		addressBookService = new AddressBookService(Arrays.asList(arrayOfContacts));
-		addressBookService.updateContact("sreeja", "hnk",IOService.REST_IO);
-		Contact contact=addressBookService.getContactData("sreeja");
+		Contact contact=AddressBookService.getContactData("sreeja");
 		String empJson = new Gson().toJson(contact);
 		RequestSpecification request = RestAssured.given();
 		request.header("Content-Type", "application/json");
 		request.body(empJson);
-		Response response = request.put("/contactsDB/" + contact.id);
+		Response response = request.delete("/contactsDB/" + contact.id);
 		int statusCode = response.getStatusCode();
 		Assert.assertEquals(200, statusCode);
+		AddressBookService.deleteEmployeePayroll(contact.firstName,IOService.REST_IO);
+		long entries = AddressBookService.countEntries(IOService.REST_IO);
+		Assert.assertEquals(5, entries);
 		
 	}
 	

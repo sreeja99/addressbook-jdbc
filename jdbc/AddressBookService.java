@@ -16,8 +16,6 @@ public class AddressBookService {
 	}
 	private static List<Contact> contactList;
 	private static AddressBookDBService addressBookDBService;
-	private AddressBookDBServiceNew addressBookDBServiceNew;
-	private Map<String, Integer> contactByCity;
 
 	public AddressBookService(List<Contact> contactList) {
 		this();
@@ -97,17 +95,19 @@ public class AddressBookService {
 		
 	}
 
-	public long countEntries(IOService ioService) {
+	public static long countEntries(IOService ioService) {
 		return contactList.size();
 	}
 
-	public void updateContact(String FirstName, String city, IOService ioService) {
-		if (ioService.equals(IOService.REST_IO)) {
-			Contact contact = this.getContactData(FirstName);
-			if (contact != null)
-				contact.city = city;
-		}
+	public  void deleteEmployeePayroll(String firstName, IOService ioService) {
+		if(ioService.equals(IOService.REST_IO))
+			Contact contact = this.getContactData(firstName);
+		    contactList.remove(contact);
+
+		
 	}
+
+	
 		
 	
 }
