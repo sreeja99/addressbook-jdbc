@@ -101,7 +101,7 @@ class AddressBookTest {
 		return request.post("/contactsDB");
 	}
 	private Contact[] getContactList() {
-		Response response = RestAssured.get("/contacts");
+		Response response = RestAssured.get("/contactsDB");
 		System.out.println("Contacts entries in JSONserver" + response.asString());
 		Contact[] arrayOfcontacts = new Gson().fromJson(response.asString(), Contact[].class);
 		return arrayOfcontacts;
@@ -129,6 +129,22 @@ class AddressBookTest {
 		}
 		long entries = addressBookService.countEntries(IOService.REST_IO);
 		Assert.assertEquals(5, entries);
+	}
+	@Test
+	public void givenNewContactFor_WhenUpdated_ShouldMatch200Respnse() {
+		AddressBookService addressBookService;
+		Contact[] arrayOfContacts = getContactList();
+		addressBookService = new AddressBookService(Arrays.asList(arrayOfContacts));
+		addressBookService.updateContact("sreeja", "hnk",IOService.REST_IO);
+		Contact contact=addressBookService.getContactData("sreeja");
+		String empJson = new Gson().toJson(contact);
+		RequestSpecification request = RestAssured.given();
+		request.header("Content-Type", "application/json");
+		request.body(empJson);
+		Response response = request.put("/contactsDB/" + contact.id);
+		int statusCode = response.getStatusCode();
+		Assert.assertEquals(200, statusCode);
+		
 	}
 	
 	
